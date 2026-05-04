@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onsen — Solutions pour piscines intelligentes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & base ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #050A0F;
+  --bg2:       #080E15;
+  --surface:   #0C1520;
+  --surface2:  #111D2C;
+  --border:    rgba(255,255,255,0.07);
+  --text:      #F0F4F8;
+  --muted:     #8BA0B8;
+  --accent:    #1AACF0;
+  --accent2:   #0076B6;
+  --green:     #22C87A;
+  --orange:    #FF8C3A;
+  --teal:      #19D4BE;
+  --purple:    #9B7FFF;
+  --glow:      rgba(26,172,240,0.18);
+  --ff-display: 'DM Serif Display', Georgia, serif;
+  --ff-body:    'DM Sans', sans-serif;
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--ff-body);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Noise texture overlay ─────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 999; opacity: 0.4;
+}
+
+/* ── Navigation ────────────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 0 5vw;
+  height: 64px; display: flex; align-items: center; justify-content: space-between;
+  background: rgba(5,10,15,0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.4s;
+}
+.nav-logo {
+  font-family: var(--ff-display); font-size: 1.35rem; letter-spacing: 0.04em;
+  color: var(--text); text-decoration: none;
+}
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a {
+  color: var(--muted); text-decoration: none; font-size: 0.85rem;
+  font-weight: 500; letter-spacing: 0.02em;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  background: var(--accent); color: #fff; border: none;
+  padding: 0.5rem 1.25rem; border-radius: 100px;
+  font-family: var(--ff-body); font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+  text-decoration: none;
+}
+.nav-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+
+/* ── Hero ──────────────────────────────────────────────────────────── */
+#hero {
+  min-height: 100svh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 100px 5vw 80px;
+  position: relative; text-align: center; overflow: hidden;
+}
+.hero-glow {
+  position: absolute; width: 900px; height: 600px;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: radial-gradient(ellipse, rgba(26,172,240,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-orb {
+  position: absolute; border-radius: 50%; filter: blur(80px);
+  pointer-events: none; animation: float 8s ease-in-out infinite;
+}
+.orb1 { width: 400px; height: 400px; background: rgba(26,172,240,0.08); top: 10%; left: -10%; }
+.orb2 { width: 300px; height: 300px; background: rgba(25,212,190,0.07); bottom: 10%; right: -5%; animation-delay: -3s; }
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-30px) rotate(3deg); }
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: rgba(26,172,240,0.1); border: 1px solid rgba(26,172,240,0.25);
+  color: var(--accent); font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.35rem 1rem; border-radius: 100px;
+  margin-bottom: 2rem;
+  opacity: 0; animation: fadeUp 0.8s var(--ease-out) 0.2s forwards;
+}
+.hero-title {
+  font-family: var(--ff-display);
+  font-size: clamp(2.8rem, 7vw, 6.5rem);
+  line-height: 1.08; font-weight: 400;
+  letter-spacing: -0.02em;
+  max-width: 900px;
+  margin-bottom: 1.5rem;
+  opacity: 0; animation: fadeUp 0.9s var(--ease-out) 0.4s forwards;
+}
+.hero-title em { font-style: italic; color: var(--accent); }
+.hero-sub {
+  font-size: clamp(1rem, 2vw, 1.2rem); font-weight: 300;
+  color: var(--muted); max-width: 600px; line-height: 1.7;
+  margin-bottom: 3rem;
+  opacity: 0; animation: fadeUp 0.9s var(--ease-out) 0.6s forwards;
+}
+.hero-actions {
+  display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  opacity: 0; animation: fadeUp 0.9s var(--ease-out) 0.8s forwards;
+}
+.btn-primary {
+  background: var(--accent); color: #fff;
+  padding: 0.9rem 2.2rem; border-radius: 100px;
+  font-weight: 600; font-size: 0.95rem;
+  text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 40px rgba(26,172,240,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(26,172,240,0.45); }
+.btn-ghost {
+  border: 1px solid var(--border); color: var(--text);
+  padding: 0.9rem 2.2rem; border-radius: 100px;
+  font-weight: 500; font-size: 0.95rem;
+  text-decoration: none; transition: border-color 0.2s, background 0.2s;
+}
+.btn-ghost:hover { border-color: var(--accent); background: rgba(26,172,240,0.05); }
+
+/* Stats bar */
+.stats-bar {
+  position: absolute; bottom: 3rem;
+  display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center;
+  opacity: 0; animation: fadeUp 0.9s var(--ease-out) 1s forwards;
+}
+.stat { text-align: center; }
+.stat-num {
+  font-family: var(--ff-display); font-size: 2rem;
+  color: var(--accent); line-height: 1;
+}
+.stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; letter-spacing: 0.04em; }
+.stat-sep { width: 1px; background: var(--border); align-self: stretch; }
+
+/* ── Scroll hint ───────────────────────────────────────────────────── */
+.scroll-hint {
+  position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+  color: var(--muted); font-size: 0.7rem; letter-spacing: 0.08em;
+  opacity: 0; animation: fadeIn 1s 1.5s forwards;
+}
+.scroll-line {
+  width: 1px; height: 40px; background: linear-gradient(to bottom, transparent, var(--accent));
+  animation: scrollLine 1.5s ease-in-out infinite;
+}
+@keyframes scrollLine { 0% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+  50% { opacity: 1; } 100% { opacity: 0; transform: scaleY(1); transform-origin: top; } }
+
+/* ── Section base ──────────────────────────────────────────────────── */
+.section { padding: 140px 5vw; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-eyebrow {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 1.2rem; display: block;
+}
+.section-title {
+  font-family: var(--ff-display);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.1; font-weight: 400; letter-spacing: -0.02em;
+  margin-bottom: 1.5rem; max-width: 700px;
+}
+.section-sub {
+  font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+  max-width: 580px; margin-bottom: 3rem; font-weight: 300;
+}
+
+/* ── Hippocampe ────────────────────────────────────────────────────── */
+#hippocampe { background: var(--bg); }
+.hippo-visual {
+  position: relative; margin-top: 4rem;
+  border-radius: 24px; overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.hippo-screen {
+  background: linear-gradient(135deg, #0A1929 0%, #0C2040 100%);
+  padding: 2.5rem; position: relative; overflow: hidden;
+  min-height: 420px; display: flex; flex-direction: column;
+}
+.hippo-screen::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(26,172,240,0.08), transparent 60%);
+}
+.hippo-ui {
+  position: relative; display: grid;
+  grid-template-columns: 220px 1fr 1fr; gap: 1rem; flex: 1;
+}
+.hippo-sidebar {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.6rem;
+}
+.sidebar-item {
+  padding: 0.55rem 0.8rem; border-radius: 8px; font-size: 0.78rem;
+  color: var(--muted); cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.sidebar-item.active {
+  background: rgba(26,172,240,0.12); color: var(--accent);
+  border: 1px solid rgba(26,172,240,0.2);
+}
+.sidebar-item .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.hippo-panel {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.2rem;
+}
+.panel-label { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 0.8rem; }
+.mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; margin-bottom: 1rem; }
+.bar {
+  flex: 1; border-radius: 3px 3px 0 0;
+  animation: barGrow 1s var(--ease-out) both;
+}
+@keyframes barGrow { from { transform: scaleY(0); transform-origin: bottom; } to { transform: scaleY(1); } }
+.bar.water { background: linear-gradient(to top, #0076B6, #1AACF0); }
+.bar.elec  { background: linear-gradient(to top, #E67E22, #FF8C3A); }
+.bar.chem  { background: linear-gradient(to top, #16A085, #19D4BE); }
+.metric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+.metric-name { font-size: 0.73rem; color: var(--muted); }
+.metric-val { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+.metric-badge {
+  font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px;
+  font-weight: 600;
+}
+.badge-ok { background: rgba(34,200,122,0.15); color: var(--green); }
+.badge-warn { background: rgba(255,140,58,0.15); color: var(--orange); }
+
+/* modules cards */
+.hippo-modules {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2.5rem;
+}
+.module-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2rem;
+  transition: border-color 0.3s, transform 0.3s;
+  position: relative; overflow: hidden;
+}
+.module-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.module-card:hover { border-color: rgba(26,172,240,0.3); transform: translateY(-4px); }
+.module-card:hover::before { opacity: 1; }
+.module-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: 1.2rem;
+}
+.module-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; }
+.module-sub { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.2rem; }
+.module-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.tag {
+  font-size: 0.7rem; font-weight: 500; letter-spacing: 0.03em;
+  padding: 0.25rem 0.65rem; border-radius: 100px;
+  border: 1px solid var(--border); color: var(--muted);
+}
+
+/* ── Divider ───────────────────────────────────────────────────────── */
+.wave-divider {
+  height: 2px; position: relative; overflow: visible;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ── Axone ─────────────────────────────────────────────────────────── */
+#axone { background: var(--bg2); }
+.axone-layout {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+}
+.axone-visual {
+  position: relative; height: 420px;
+}
+.axone-core {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,140,58,0.25), rgba(255,140,58,0.05));
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,140,58,0.3);
+  box-shadow: 0 0 80px rgba(255,140,58,0.15);
+  font-size: 4rem;
+  animation: pulse 3s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 80px rgba(255,140,58,0.15); }
+  50%       { box-shadow: 0 0 120px rgba(255,140,58,0.3); }
+}
+.ring {
+  position: absolute; top: 50%; left: 50%;
+  border-radius: 50%; border: 1px solid;
+  transform: translate(-50%, -50%);
+  animation: spin linear infinite;
+}
+.ring1 { width: 280px; height: 280px; border-color: rgba(255,140,58,0.12); animation-duration: 20s; }
+.ring2 { width: 360px; height: 360px; border-color: rgba(255,140,58,0.07); animation-duration: 30s; animation-direction: reverse; }
+.ring3 { width: 420px; height: 420px; border-color: rgba(255,140,58,0.04); animation-duration: 45s; }
+@keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.flow-arrow {
+  position: absolute; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.04em; color: var(--orange); text-transform: uppercase;
+}
+.fa1 { top: 10%; left: 52%; }
+.fa2 { bottom: 10%; left: 38%; }
+.kpi-pill {
+  position: absolute;
+  background: var(--surface); border: 1px solid rgba(255,140,58,0.25);
+  border-radius: 12px; padding: 0.7rem 1rem;
+  backdrop-filter: blur(10px);
+}
+.kp1 { top: 5%; right: 0; }
+.kp2 { bottom: 15%; left: 0; }
+.kpi-pill-num {
+  font-family: var(--ff-display); font-size: 1.4rem; color: var(--orange); line-height: 1;
+}
+.kpi-pill-label { font-size: 0.68rem; color: var(--muted); margin-top: 0.15rem; }
+
+/* ── Geyser ────────────────────────────────────────────────────────── */
+#geyser { background: var(--bg); }
+.geyser-layout {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+}
+.geyser-compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2.5rem;
+}
+.compare-col {
+  border-radius: 16px; padding: 1.5rem;
+  border: 1px solid var(--border);
+}
+.compare-col.old { background: rgba(255,255,255,0.02); }
+.compare-col.new { background: rgba(34,200,122,0.06); border-color: rgba(34,200,122,0.25); }
+.compare-header {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 1rem; display: flex; align-items: center; gap: 0.4rem;
+}
+.compare-header.old-h { color: var(--muted); }
+.compare-header.new-h { color: var(--green); }
+.compare-item {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  font-size: 0.82rem; color: var(--muted); margin-bottom: 0.6rem; line-height: 1.4;
+}
+.check { color: var(--green); font-weight: 700; margin-top: 1px; }
+.cross { color: #4a5568; margin-top: 1px; }
+
+.geyser-visual {
+  position: relative; height: 420px; display: flex; align-items: center; justify-content: center;
+}
+.geyser-icon-wrap {
+  width: 180px; height: 280px; position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.geyser-body {
+  width: 120px; height: 220px; border-radius: 60px 60px 20px 20px;
+  background: linear-gradient(to bottom, #0A2E1E, #0f3d27);
+  border: 1px solid rgba(34,200,122,0.3);
+  position: relative; overflow: hidden;
+  box-shadow: 0 0 60px rgba(34,200,122,0.12), inset 0 0 30px rgba(34,200,122,0.05);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 3rem;
+  animation: geyserPulse 4s ease-in-out infinite;
+}
+@keyframes geyserPulse {
+  0%,100% { box-shadow: 0 0 60px rgba(34,200,122,0.12); }
+  50%      { box-shadow: 0 0 100px rgba(34,200,122,0.25); }
+}
+.water-drops {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 30px;
+  background: linear-gradient(to top, rgba(34,200,122,0.15), transparent);
+}
+.drop {
+  position: absolute; width: 6px; height: 10px; border-radius: 50%;
+  background: rgba(34,200,122,0.4);
+  animation: drip 2.5s ease-in infinite;
+}
+.d1 { left: 30%; animation-delay: 0s; }
+.d2 { left: 55%; animation-delay: 0.8s; }
+.d3 { left: 70%; animation-delay: 1.6s; }
+@keyframes drip {
+  0% { transform: translateY(-200px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+
+/* ── REUT ──────────────────────────────────────────────────────────── */
+#reut { background: var(--bg2); }
+.reut-flow {
+  display: flex; align-items: stretch; gap: 0; margin-top: 4rem;
+  border-radius: 20px; overflow: hidden; border: 1px solid var(--border);
+}
+.flow-node {
+  flex: 1; padding: 2rem 1.5rem; text-align: center;
+  border-right: 1px solid var(--border);
+  position: relative; transition: background 0.3s;
+}
+.flow-node:last-child { border-right: none; }
+.flow-node:hover { background: rgba(255,255,255,0.03); }
+.flow-arrow-h {
+  position: absolute; right: -12px; top: 50%;
+  transform: translateY(-50%); z-index: 2;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--teal); display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; color: var(--bg);
+}
+.flow-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+.flow-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+.flow-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+.reut-usages {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem;
+}
+.usage-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.8rem;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.usage-card:hover { border-color: rgba(25,212,190,0.35); transform: translateY(-3px); }
+.usage-emoji { font-size: 2rem; margin-bottom: 0.8rem; }
+.usage-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+.usage-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+/* ── Synergy strip ─────────────────────────────────────────────────── */
+#synergy { padding: 100px 5vw; background: var(--bg); }
+.synergy-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+.synergy-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--border); border-radius: 20px; overflow: hidden; margin-top: 4rem;
+}
+.syn-card {
+  background: var(--surface); padding: 2.5rem 1.5rem; text-align: center;
+  position: relative; overflow: hidden; transition: background 0.3s;
+}
+.syn-card:hover { background: var(--surface2); }
+.syn-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  transform: scaleX(0); transition: transform 0.3s var(--ease-out);
+}
+.syn-card:hover::after { transform: scaleX(1); }
+.syn-c1::after { background: var(--accent); }
+.syn-c2::after { background: var(--orange); }
+.syn-c3::after { background: var(--green); }
+.syn-c4::after { background: var(--teal); }
+.syn-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+.syn-name { font-family: var(--ff-display); font-size: 1.4rem; margin-bottom: 0.4rem; }
+.syn-sub { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+/* ── Testimonials ──────────────────────────────────────────────────── */
+#temoignages { padding: 120px 5vw; background: var(--bg2); }
+.testi-inner { max-width: 1100px; margin: 0 auto; }
+.testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 4rem; }
+.testi-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2rem;
+  transition: transform 0.3s, border-color 0.3s;
+}
+.testi-card:hover { transform: translateY(-4px); border-color: rgba(26,172,240,0.2); }
+.testi-quote {
+  font-size: 0.9rem; line-height: 1.7; color: var(--muted);
+  font-style: italic; margin-bottom: 1.5rem;
+}
+.testi-author { display: flex; align-items: center; gap: 0.8rem; }
+.testi-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+.testi-name { font-size: 0.85rem; font-weight: 600; }
+.testi-role { font-size: 0.75rem; color: var(--muted); }
+.testi-kpi {
+  background: rgba(26,172,240,0.08); border: 1px solid rgba(26,172,240,0.15);
+  border-radius: 8px; padding: 0.5rem 0.8rem; margin-bottom: 1rem;
+  font-size: 0.82rem; font-weight: 600; color: var(--accent);
+}
+
+/* ── CTA final ─────────────────────────────────────────────────────── */
+#cta { padding: 140px 5vw; background: var(--bg); text-align: center; }
+.cta-inner { max-width: 700px; margin: 0 auto; }
+.cta-glow {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(26,172,240,0.1), transparent 70%);
+  pointer-events: none;
+}
+.cta-title {
+  font-family: var(--ff-display);
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.1; font-weight: 400;
+  margin-bottom: 1.5rem;
+}
+.cta-sub { font-size: 1rem; color: var(--muted); line-height: 1.7; margin-bottom: 2.5rem; }
+.contact-row {
+  display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;
+  font-size: 0.85rem; color: var(--muted);
+}
+.contact-row a { color: var(--accent); text-decoration: none; }
+.contact-row a:hover { text-decoration: underline; }
+
+/* ── Footer ────────────────────────────────────────────────────────── */
+footer {
+  padding: 2rem 5vw;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.8rem; color: var(--muted);
+}
+
+/* ── Animations ─────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+.reveal {
+  opacity: 0; transform: translateY(40px);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+}
+.reveal.visible { opacity: 1; transform: none; }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .axone-layout, .geyser-layout { grid-template-columns: 1fr; gap: 3rem; }
+  .hippo-ui { grid-template-columns: 1fr; }
+  .hippo-sidebar { display: none; }
+  .hippo-modules { grid-template-columns: 1fr; }
+  .synergy-grid { grid-template-columns: 1fr 1fr; }
+  .testi-grid { grid-template-columns: 1fr; }
+  .reut-usages { grid-template-columns: 1fr; }
+  .reut-flow { flex-direction: column; }
+  .geyser-compare { grid-template-columns: 1fr; }
+  .stats-bar { gap: 1.5rem; }
+  .stat-sep { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Navigation ───────────────────────────────────────────── -->
+<nav>
+  <a href="#" class="nav-logo">Onsen</a>
+  <ul class="nav-links">
+    <li><a href="#hippocampe">Hippocampe</a></li>
+    <li><a href="#axone">Axone</a></li>
+    <li><a href="#geyser">Geyser</a></li>
+    <li><a href="#reut">REUT</a></li>
+    <li><a href="#temoignages">Témoignages</a></li>
+  </ul>
+  <a href="#cta" class="nav-cta">Demander un audit</a>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+
+  <span class="eyebrow">✦ Expert énergétique &amp; numérique depuis 2009</span>
+  <h1 class="hero-title">La piscine de demain<br><em>commence aujourd'hui.</em></h1>
+  <p class="hero-sub">Des solutions interconnectées qui réduisent vos consommations, automatisent votre exploitation et respectent vos obligations réglementaires.</p>
+
+  <div class="hero-actions">
+    <a href="#hippocampe" class="btn-primary">Découvrir les solutions</a>
+    <a href="#temoignages" class="btn-ghost">Voir les résultats →</a>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num">7 GWh</div>
+      <div class="stat-label">économisés / an</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <div class="stat-num">+100</div>
+      <div class="stat-label">sites équipés</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <div class="stat-num">−50%</div>
+      <div class="stat-label">consommation d'eau</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">sur mesure</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>DÉFILER</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── Hippocampe ─────────────────────────────────────────── -->
+<section id="hippocampe" class="section">
+  <div class="section-inner">
+    <span class="section-eyebrow reveal">Plateforme numérique</span>
+    <h2 class="section-title reveal">Hippocampe®<br>Le cerveau de votre piscine.</h2>
+    <p class="section-sub reveal">Un module serveur central qui connecte tous vos équipements et vous donne une vision complète, en temps réel, depuis n'importe quel terminal.</p>
+
+    <!-- Mock UI -->
+    <div class="hippo-visual reveal">
+      <div class="hippo-screen">
+        <div class="hippo-ui">
+          <div class="hippo-sidebar">
+            <div class="panel-label">NAVIGATION</div>
+            <div class="sidebar-item active"><div class="dot"></div> Tableau de bord</div>
+            <div class="sidebar-item"><div class="dot"></div> Fréquentation</div>
+            <div class="sidebar-item"><div class="dot"></div> Eau</div>
+            <div class="sidebar-item"><div class="dot"></div> Électricité</div>
+            <div class="sidebar-item"><div class="dot"></div> Chimie</div>
+            <div class="sidebar-item"><div class="dot"></div> Carnet sanitaire</div>
+            <div class="sidebar-item"><div class="dot"></div> Alertes (3)</div>
+          </div>
+
+          <div class="hippo-panel">
+            <div class="panel-label">CONSOMMATIONS — 7 DERNIERS JOURS</div>
+            <div class="mini-chart">
+              <div class="bar water" style="height:40%;animation-delay:0.1s"></div>
+              <div class="bar water" style="height:65%;animation-delay:0.15s"></div>
+              <div class="bar water" style="height:55%;animation-delay:0.2s"></div>
+              <div class="bar water" style="height:80%;animation-delay:0.25s"></div>
+              <div class="bar water" style="height:60%;animation-delay:0.3s"></div>
+              <div class="bar water" style="height:45%;animation-delay:0.35s"></div>
+              <div class="bar water" style="height:70%;animation-delay:0.4s"></div>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Eau / baigneur</span>
+              <span class="metric-val">42 L</span>
+              <span class="metric-badge badge-ok">−38%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Chlore libre</span>
+              <span class="metric-val">1.2 mg/L</span>
+              <span class="metric-badge badge-ok">OK</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">pH bassin 1</span>
+              <span class="metric-val">7.4</span>
+              <span class="metric-badge badge-ok">OK</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Température</span>
+              <span class="metric-val">27.8°C</span>
+              <span class="metric-badge badge-warn">+0.3°</span>
+            </div>
+          </div>
+
+          <div class="hippo-panel">
+            <div class="panel-label">ÉLECTRICITÉ — KWH CE MOIS</div>
+            <div class="mini-chart">
+              <div class="bar elec" style="height:70%;animation-delay:0.1s"></div>
+              <div class="bar elec" style="height:85%;animation-delay:0.15s"></div>
+              <div class="bar elec" style="height:60%;animation-delay:0.2s"></div>
+              <div class="bar elec" style="height:90%;animation-delay:0.25s"></div>
+              <div class="bar elec" style="height:75%;animation-delay:0.3s"></div>
+              <div class="bar elec" style="height:55%;animation-delay:0.35s"></div>
+              <div class="bar elec" style="height:80%;animation-delay:0.4s"></div>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Conso. pompes</span>
+              <span class="metric-val">14 820 kWh</span>
+              <span class="metric-badge badge-ok">−12%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Éclairage</span>
+              <span class="metric-val">3 240 kWh</span>
+              <span class="metric-badge badge-ok">OK</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Traitement d'air</span>
+              <span class="metric-val">8 110 kWh</span>
+              <span class="metric-badge badge-warn">Élevé</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Total mois</span>
+              <span class="metric-val">26 170 kWh</span>
+              <span class="metric-badge badge-ok">−9%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module cards -->
+    <div class="hippo-modules">
+      <div class="module-card reveal reveal-delay-1">
+        <div class="module-icon" style="background: rgba(26,172,240,0.1);">📊</div>
+        <div class="module-title">Hippocampe Suivi</div>
+        <div class="module-sub">Centralisation de toutes les données de l'établissement en un tableau de bord unique. Génération automatique du carnet sanitaire digital conforme ARS.</div>
+        <div class="module-tags">
+          <span class="tag">Fréquentation</span>
+          <span class="tag">Eau &amp; Chimie</span>
+          <span class="tag">Électricité</span>
+          <span class="tag">Carnet sanitaire</span>
+          <span class="tag">Alertes SMS/mail</span>
+        </div>
+      </div>
+
+      <div class="module-card reveal reveal-delay-2">
+        <div class="module-icon" style="background: rgba(155,127,255,0.1);">⚙️</div>
+        <div class="module-title">Hippocampe Technique</div>
+        <div class="module-sub">Logiciel SCADA de pilotage des circuits de traitement d'eau en sous-station. Dosage chimique automatisé, lavages de filtres, télémaintenance.</div>
+        <div class="module-tags">
+          <span class="tag">Pilotage pompes/vannes</span>
+          <span class="tag">Dosage automatique</span>
+          <span class="tag">Lavages filtres</span>
+          <span class="tag">Télémaintenance</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Axone ──────────────────────────────────────────────── -->
+<section id="axone" class="section">
+  <div class="section-inner">
+    <div class="axone-layout">
+      <div>
+        <span class="section-eyebrow reveal">Récupération d'énergie</span>
+        <h2 class="section-title reveal">Axone.<br>La chaleur perdue,<br><span style="color:var(--orange)">récupérée.</span></h2>
+        <p class="section-sub reveal">Chaque litre d'eau chaude qui part à l'égout emporte de l'énergie. Axone la capte, la valorise, et la restitue là où vous en avez besoin.</p>
+
+        <div style="display:flex; flex-direction:column; gap:1rem;" class="reveal">
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <span style="color:var(--orange); font-size:1.3rem; margin-top:2px;">◆</span>
+            <div>
+              <div style="font-weight:600; margin-bottom:0.2rem;">Préchauffage de l'eau d'appoint</div>
+              <div style="font-size:0.85rem; color:var(--muted); line-height:1.6;">Jusqu'à 100% du chauffage des bassins assuré par la récupération en été.</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <span style="color:var(--orange); font-size:1.3rem; margin-top:2px;">◆</span>
+            <div>
+              <div style="font-weight:600; margin-bottom:0.2rem;">Eau froide pour lavages de filtres</div>
+              <div style="font-size:0.85rem; color:var(--muted); line-height:1.6;">L'eau refroidie par l'échangeur est stockée pour laver les filtres à la demande.</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <span style="color:var(--orange); font-size:1.3rem; margin-top:2px;">◆</span>
+            <div>
+              <div style="font-weight:600; margin-bottom:0.2rem;">ROI rapide, résultats mesurés</div>
+              <div style="font-size:0.85rem; color:var(--muted); line-height:1.6;">Retour sur investissement entre 3 et 5 ans. Bilan énergétique en temps réel via Hippocampe.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="axone-visual reveal">
+        <div class="ring ring1"></div>
+        <div class="ring ring2"></div>
+        <div class="ring ring3"></div>
+        <div class="axone-core">🌡</div>
+        <div class="flow-arrow fa1">Eaux chaudes ↓</div>
+        <div class="flow-arrow fa2">↑ Chaleur récupérée</div>
+        <div class="kpi-pill kp1">
+          <div class="kpi-pill-num">230 MWh</div>
+          <div class="kpi-pill-label">gain moyen / site / an</div>
+        </div>
+        <div class="kpi-pill kp2">
+          <div class="kpi-pill-num">~7 GWh</div>
+          <div class="kpi-pill-label">économisés / an au total</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Geyser ─────────────────────────────────────────────── -->
+<section id="geyser" class="section">
+  <div class="section-inner">
+    <div class="geyser-layout">
+      <div class="geyser-visual reveal">
+        <div class="geyser-icon-wrap">
+          <div class="geyser-body">
+            🦶
+            <div class="water-drops">
+              <div class="drop d1"></div>
+              <div class="drop d2"></div>
+              <div class="drop d3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <span class="section-eyebrow reveal">Hygiène réinventée</span>
+        <h2 class="section-title reveal">Geyser.<br>Le pédiluve <span style="color:var(--green)">repensé</span><br>de zéro.</h2>
+        <p class="section-sub reveal">Le pédiluve traditionnel gaspille l'eau et peine à garantir une hygiène efficace. Geyser change la donne radicalement.</p>
+
+        <div class="geyser-compare reveal">
+          <div class="compare-col old">
+            <div class="compare-header old-h">⛔ Avant</div>
+            <div class="compare-item"><span class="cross">✕</span>Eau stagnante, renouvellement aléatoire</div>
+            <div class="compare-item"><span class="cross">✕</span>Forte consommation d'eau potable</div>
+            <div class="compare-item"><span class="cross">✕</span>Efficacité hygiénique variable</div>
+            <div class="compare-item"><span class="cross">✕</span>Aucun suivi ni traçabilité</div>
+          </div>
+          <div class="compare-col new">
+            <div class="compare-header new-h">✅ Geyser</div>
+            <div class="compare-item"><span class="check">✓</span>Traitement actif continu et contrôlé</div>
+            <div class="compare-item"><span class="check">✓</span>Compatible eau recyclée (REUT)</div>
+            <div class="compare-item"><span class="check">✓</span>Hygiène certifiée, conformité réglementaire</div>
+            <div class="compare-item"><span class="check">✓</span>Pilotage &amp; traçabilité via Hippocampe</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── REUT ───────────────────────────────────────────────── -->
+<section id="reut" class="section">
+  <div class="section-inner">
+    <span class="section-eyebrow reveal">Économie circulaire</span>
+    <h2 class="section-title reveal">REUT.<br>L'eau usée est<br><span style="color:var(--teal)">une ressource.</span></h2>
+    <p class="section-sub reveal">Un bac tampon de stockage permet de réutiliser les eaux traitées pour tous les usages non-nobles. Moins de rejets, moins d'achats d'eau, plus de durabilité.</p>
+
+    <!-- Flow diagram -->
+    <div class="reut-flow reveal">
+      <div class="flow-node">
+        <div class="flow-icon">🏊</div>
+        <div class="flow-title">Eaux usées</div>
+        <div class="flow-desc">Douches, bassins, balnéo — eaux chaudes évacuées</div>
+        <div class="flow-arrow-h">→</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-icon">🌡</div>
+        <div class="flow-title">Axone</div>
+        <div class="flow-desc">Récupération de chaleur — eau refroidie et valorisée</div>
+        <div class="flow-arrow-h">→</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-icon">🗄️</div>
+        <div class="flow-title">Bac tampon</div>
+        <div class="flow-desc">Stockage sécurisé, traitement &amp; désinfection intégrés</div>
+        <div class="flow-arrow-h">→</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-icon">♻️</div>
+        <div class="flow-title">Réutilisation</div>
+        <div class="flow-desc">3 débouchés concrets pour l'eau recyclée</div>
+      </div>
+    </div>
+
+    <div class="reut-usages">
+      <div class="usage-card reveal reveal-delay-1">
+        <div class="usage-emoji">🦶</div>
+        <div class="usage-title">Alimentation des pédiluves</div>
+        <div class="usage-sub">Le système Geyser est directement alimenté par le bac REUT. Zéro eau potable consommée pour cet usage réglementaire.</div>
+      </div>
+      <div class="usage-card reveal reveal-delay-2">
+        <div class="usage-emoji">🔄</div>
+        <div class="usage-title">Lavages de filtres</div>
+        <div class="usage-sub">L'eau froide issue d'Axone est stockée et utilisée à la demande pour les lavages de filtres — sans puiser sur le réseau public.</div>
+      </div>
+      <div class="usage-card reveal reveal-delay-3">
+        <div class="usage-emoji">🧹</div>
+        <div class="usage-title">Nettoyage de la voirie</div>
+        <div class="usage-sub">Plages de bassins, parkings, voirie — l'excédent alimente les nettoyeurs. Un circuit vertueux à tolérance zéro au gaspillage.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Synergy grid ───────────────────────────────────────── -->
+<section id="synergy">
+  <div class="synergy-inner">
+    <span class="section-eyebrow reveal" style="display:block; text-align:center;">L'écosystème Onsen</span>
+    <h2 class="section-title reveal" style="margin:0 auto 1rem; text-align:center; max-width:100%;">Chaque solution<br>amplifie les autres.</h2>
+    <p class="section-sub reveal" style="margin:0 auto 0; text-align:center;">Une architecture pensée pour l'interdépendance : Hippocampe supervise, Axone produit, REUT stocke, Geyser valorise.</p>
+
+    <div class="synergy-grid reveal">
+      <div class="syn-card syn-c1">
+        <span class="syn-icon">🖥</span>
+        <div class="syn-name" style="color:var(--accent)">Hippocampe</div>
+        <div class="syn-sub">Supervise &amp; pilote l'ensemble en temps réel</div>
+      </div>
+      <div class="syn-card syn-c2">
+        <span class="syn-icon">🌡</span>
+        <div class="syn-name" style="color:var(--orange)">Axone</div>
+        <div class="syn-sub">Récupère la chaleur &amp; produit de l'eau froide</div>
+      </div>
+      <div class="syn-card syn-c3">
+        <span class="syn-icon">🦶</span>
+        <div class="syn-name" style="color:var(--green)">Geyser</div>
+        <div class="syn-sub">Valorise l'eau recyclée pour l'hygiène</div>
+      </div>
+      <div class="syn-card syn-c4">
+        <span class="syn-icon">♻️</span>
+        <div class="syn-name" style="color:var(--teal)">REUT</div>
+        <div class="syn-sub">Stocke &amp; redistribue les eaux traitées</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Testimonials ───────────────────────────────────────── -->
+<section id="temoignages">
+  <div class="testi-inner">
+    <span class="section-eyebrow reveal" style="display:block; text-align:center;">Ils nous font confiance</span>
+    <h2 class="section-title reveal" style="margin:0 auto 0; text-align:center; max-width:100%;">Des résultats<br>concrets et mesurés.</h2>
+
+    <div class="testi-grid">
+      <div class="testi-card reveal reveal-delay-1">
+        <div class="testi-kpi">💧 50 L/baigneur — contre 100 à 150 L auparavant</div>
+        <div class="testi-quote">« Nous récupérons les calories sur les eaux grises pour préchauffer l'eau des bassins et stockons l'eau refroidie pour laver les filtres. »</div>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:rgba(26,172,240,0.12)">👩</div>
+          <div>
+            <div class="testi-name">Géraldine Bougeard</div>
+            <div class="testi-role">Directrice — Stade aquatique de Vichy</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal reveal-delay-2">
+        <div class="testi-kpi">⚡ 230 MWh de gain en 1 an</div>
+        <div class="testi-quote">« L'été, nous sommes capables de chauffer à température juste en échangeant avec la solution Onsen. Confort technique amélioré, moins de présence inutile des techniciens. »</div>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:rgba(255,140,58,0.12)">👨</div>
+          <div>
+            <div class="testi-name">Olivier Dutrieux</div>
+            <div class="testi-role">Directeur — Aqualib', La Côte-Saint-André</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal reveal-delay-3">
+        <div class="testi-kpi">🏊 De 55 L à 40 L / baigneur / bassin</div>
+        <div class="testi-quote">« Nous approchons les 500 MWh sur l'année. Nous avons également une maîtrise des consommations d'eau remarquable. Nous sommes très satisfaits. »</div>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:rgba(34,200,122,0.12)">👨</div>
+          <div>
+            <div class="testi-name">Philippe Martin</div>
+            <div class="testi-role">Responsable Technique — Espace Nautique du Grand Chalon</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────────── -->
+<section id="cta" style="position:relative;">
+  <div class="cta-glow"></div>
+  <div class="cta-inner">
+    <span class="section-eyebrow reveal" style="display:block; text-align:center;">Passez à l'action</span>
+    <h2 class="cta-title reveal">Votre audit gratuit<br>vous attend.</h2>
+    <p class="cta-sub reveal">Nos ingénieurs analysent votre établissement et vous remettent un plan d'équipement chiffré avec les économies et le ROI attendus. Sans engagement.</p>
+    <div class="reveal">
+      <a href="mailto:contact@onsen-sas.com" class="btn-primary" style="font-size:1.05rem; padding:1rem 2.5rem;">
+        Demander mon audit gratuit →
+      </a>
+    </div>
+    <div class="contact-row reveal">
+      <span>📞 <a href="tel:+33481655450">04 81 65 54 50</a></span>
+      <span>•</span>
+      <span>📧 <a href="mailto:contact@onsen-sas.com">contact@onsen-sas.com</a></span>
+      <span>•</span>
+      <span>🌐 <a href="https://www.onsen-sas.com" target="_blank">onsen-sas.com</a></span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────────── -->
+<footer>
+  <span>© 2025 Onsen SAS — 5 rue du Canal, 69100 Villeurbanne</span>
+  <span style="color:var(--border);">|</span>
+  <span>Soutenu par la Région Auvergne-Rhône-Alpes</span>
+</footer>
+
+<script>
+// Reveal on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Smooth active nav highlight
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--text)' : '';
+  });
+}, { passive: true });
+
+// Bar chart animation on scroll
+const hippoVisual = document.querySelector('.hippo-visual');
+const hippoObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) {
+    document.querySelectorAll('.bar').forEach((b, i) => {
+      b.style.animationDelay = (i * 0.06) + 's';
+    });
+    hippoObs.disconnect();
+  }
+}, { threshold: 0.3 });
+if (hippoVisual) hippoObs.observe(hippoVisual);
+
+// Counter animation for hero stats
+function animateCount(el, target, suffix, duration) {
+  const start = Date.now();
+  const update = () => {
+    const p = Math.min((Date.now() - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = (typeof target === 'string')
+      ? target
+      : Math.round(target * ease) + suffix;
+    if (p < 1) requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
+}
+</script>
+</body>
+</html>
